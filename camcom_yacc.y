@@ -33,6 +33,7 @@
 %token  TOKPARAM
 %token  TOKMSTRING
 %token  TOKDATA
+%token  TOKNYI
 
 %%
 
@@ -84,6 +85,7 @@ modifier:
      | TOKVALREQ {printf("Modifier %s needs a value\n",(char*)$1);}
      | TOKDATA TOKEQUAL TOKMSTRING {if(DEBUG2)printf("DATA: %s \n",(char*)$3); token_with_string((char*)$1,(char*)$3);}
      | TOKDEP {printf("Deprecated modifier: %s \n",(char*)$1);}
+     | TOKNYI {printf("Modifier %s not yet implemented; ignored.\n",(char*)$1);}
      | TOKNOVAL TOKEQUAL TOKMSTRING {printf("String %s illegal for modifier %s \n",(char*)$3,(char*)$1);}
      | TOKNOVAL TOKEQUAL TOKHEXNUM {printf("Value %s illegal for modifier %s \n",(char*)$3,(char*)$1);}
      | TOKNOVAL TOKEQUAL TOKPARAM {printf("Parameter %s illegal for modifier %s \n",(char*)$3,(char*)$1);}
@@ -103,6 +105,57 @@ int main(int argc, char *argv[]) {
 
   int i;
   char* end;
+
+  if(argc>1)
+    {
+  if(strncmp(argv[1],"-h",2)==0)
+    {
+      printf("caCAMCOM command summary:\n");
+      printf("\tSET - set one or more parameters in a CAMAC packet\n");
+      printf("\tADD - start another CAMAC packet\n");
+      printf("\tDOIT or GO - execute the packets\n");
+      printf("\tRESET - clear all the packets\n");
+      printf("\tSHOW - show all the current parameters\n");
+      printf("\tEXIT - quit the program\n");
+      printf("\tDUMP - show more detailed packet information\n");
+      printf("\tSLEEP ms - wait the specified number of milliseconds\n");
+      printf("caCAMCOM parameters:\n");
+      printf("\t/INPUT=file containing data\n");
+      printf("\t/OUTPUT=file for data output\n");
+      printf("\t/BCNT=nbytes - specify space for nbytes of output\n");
+      printf("\t/DATA=(data1,data2,..) - specify data for write functions\n");
+      printf("\t/DATA=dataword - specify one data word\n");
+      printf("\t/HEX - from now on data are hex\n");
+      printf("\tF(NCODE)=nn CAMAC function\n");
+      printf("\tCR(ATE)=nn CAMAC crate\n");
+      printf("\tMO(DULE)=nn CAMAC module number\n");
+      printf("\tA(DDRESS)=nn CAMAC subaddress\n");
+      printf("\tBR(ANCH)=AAnn Branch (IOC name - LI21, for example)\n");
+      printf("\tP24 - pack 24 bits into each data word\n");
+      printf("\tLONGWORD - use 32 bit data words\n");
+      printf("\tQUIET - don't report back status\n");
+      printf("\tPR(OMPT)=new CAMCOM prompt\n");
+      return 0;
+    }
+
+  if(strncmp(argv[1],"-ex",3)==0)
+    {
+        printf("caCAMCOM command examples\n");
+        printf(" set/br=li21/cr=2/mo=3/fn=16/data=4\n");
+	printf(" Branch(IOC) = LI21, Crate=2, Module=3,Function=16\n");
+        printf(" go\n");
+        printf(" execute the command\n");
+	  printf(" add/hex/p24/data=(abc,1a86,12f4)\n");
+        printf(" add a packet with three pieces of 24-bit data\n");
+        printf(" go\n");
+        printf(" execute both packets\n");
+        printf(" reset\n");
+        printf(" set/br=li21/cr=2/mo=3/fn=0/bcnt=32\n");
+        printf(" set the function to read and expect 32 bytes of data\n");
+
+      return 0;
+    }
+    }
 
   printf("\nCommand-line arguments:\n");
   for(i=0;i<argc;i++)

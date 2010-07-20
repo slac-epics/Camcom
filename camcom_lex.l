@@ -39,11 +39,11 @@ GPIB                                 { yylval=yytoupper(yytext); return TOKDEP; 
 
 SLEEP                                { yylval="SLEEP"; return TOKVERB5; }
 
-FOREVER                              { yylval="FOREVER"; return TOKFOREVER; }
+FOREVER                              { yylval="FOREVER"; return TOKNYI; }
 
 (TYPE|HELP).*                        { yylval=yytoupper4(yytext);  return TOKVERB3; }
 
-REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKVERB2; }
+REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 
 \@    BEGIN INCL;  /* Indirect file specification */
@@ -86,7 +86,7 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKVERB2; }
 
 <CV>NOOUTP(U(T)?)?                           { yylval="NOOUTPUT"; store_index(nooutput_index); return TOKNEGATED;}
 
-<CV>FI(L(L)?)?                              { store_index(fill_index); yylval="FILL"; return TOKVALREQ;}
+<CV>FI(L(L)?)?                              { store_index(fill_index); yylval="FILL"; return TOKNYI;}
 
 <CV>BC(N(T)?)?                              { store_index(bcnt_index); yylval="BCNT"; return TOKVALREQ;}
 
@@ -96,13 +96,13 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKVERB2; }
 
 <CV>NODEBUG                                 { store_index(nodebug_index); yylval="DEBUG"; return TOKNEGATED;}
 
-<CV>NOFI(L(L)?)?                             { store_index(nofill_index); yylval="NOFILL"; return TOKNEGATED;}
+<CV>NOFI(L(L)?)?                             { store_index(nofill_index); yylval="NOFILL"; return TOKNYI;}
 
 <CV>NOBC(N(T)?)?                             { store_index(nobcnt_index); yylval="NOBCNT"; return TOKNEGATED;}
 
 <CV>NOCT(L(W)?)?                             { store_index(ctlw_index); yylval="NOCTLW"; return TOKNEGATED;}
 
-<CV>CO(M(M(A(N(D)?)?)?)?)?                  { store_index(command_index); yylval="COMMAND";  return TOKVALREQ;}
+<CV>CO(M(M(A(N(D)?)?)?)?)?                  { store_index(command_index); yylval="COMMAND";  return TOKNYI;}
 
 <CV>DA(T(A)?)?                              { BEGIN DT; store_index(data_index); yylval="DATA";  return TOKDATA;}
 
@@ -166,23 +166,23 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKVERB2; }
 
 <CV>H(E(X)?)?                               { store_index(hex_index); yylval="HEX";   return TOKNOVAL; }
 
-<CV>PIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="PIOP_CHECKSUM";   return TOKNOVAL; }
+<CV>PIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="PIOP_CHECKSUM";   return TOKNYI; }
 
 <CV>RE_PACK                 { store_index(re_pack_index); yylval=yytoupper(yytext);   return TOKNOVAL; }
 
 <CV>LONG(W(O(R(D)?)?)?)?                  { store_index(longword_index); yylval="LONGWORD";   return TOKNOVAL; }
 
-<CV>REPEAT                  { store_index(repeat_index); yylval=yytoupper(yytext);   return TOKNOVAL; }
+<CV>REPEAT                  { store_index(repeat_index); yylval=yytoupper(yytext);   return TOKNYI; }
 
 <CV>NOH(E(X)?)?                                { store_index(hex_index); yylval="NOHEX";   return TOKNEGATED; }
 
-<CV>NOPIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="NO_PIOP_CHECKSUM";   return TOKNEGATED; }
+<CV>NOPIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="NO_PIOP_CHECKSUM";   return TOKNYI; }
 
 <CV>NORE_PACK                  { store_index(re_pack_index); yylval=yytoupper(yytext);   return TOKNEGATED; }
 
 <CV>NOLONGWORD                  { store_index(longword_index); yylval=yytoupper(yytext);   return TOKNEGATED; }
 
-<CV>NOREPEAT                  { store_index(repeat_index); yylval=yytoupper(yytext);   return TOKNEGATED; }
+<CV>NOREPEAT                  { store_index(repeat_index); yylval=yytoupper(yytext);   return TOKNYI; }
 
 <CV>P32                            { store_index(p32_index); yylval=yytoupper(yytext);   return TOKNOVAL; }
 
