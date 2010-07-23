@@ -7,6 +7,7 @@
   #include "camcom_proto.h"
   #include "camcom_data.h"
   int yylex(void);
+  void  start_include(const int);
   void yyerror(char *);
   #define DEBUG1 debug_level()>0
   #define DEBUG2 debug_level()>1
@@ -105,6 +106,8 @@ int main(int argc, char *argv[]) {
 
   int i;
   char* end;
+  FILE *tmp_out;
+  int use_camcom_tmp=0;
 
   if(argc>1)
     {
@@ -113,6 +116,16 @@ int main(int argc, char *argv[]) {
         printf("Executing vmshelp.py camcom.help");
         system("vmshelp.py camcom.help");
         return 0;
+      }
+
+    /* If the user specified a direct "DO", copy the command to camcom.tmp for later initial "@" use */
+
+    if((strncmp(argv[1],"do",2)==0)||(strncmp(argv[1],"DO",2)==0))
+      {
+	tmp_out=fopen("camcom.tmp","w");
+        fprintf(tmp_out,"%s\n",argv[1]);
+        use_camcom_tmp=1;
+        fclose(tmp_out);
       }
     }
 
@@ -133,12 +146,18 @@ int main(int argc, char *argv[]) {
        } 
     }
 
-  yyin = fopen(argv[1],"r"); 
+  /* open the specified file if not a direct DO command */
+
+  if(argc>1 && !use_camcom_tmp) yyin = fopen(argv[1],"r");
 
   printf("\nCAMCOM>");
   setup_whole_packet();
   camcom_packet_clean_all();
   set_calling_level(0);
+
+  /* Use the "@" processing to get the direct DO command processesd */
+  if(use_camcom_tmp) start_include(0);
+
   yyparse();
   fclose(yyin);
   return 0;

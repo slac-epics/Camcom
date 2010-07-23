@@ -1,0 +1,445 @@
+1 CAMCOM
+ caCAMCOM> is a program designed to allow the user to directly access CAMAC 
+         modules in a coherent manner.  An introduction to CAMCOM> is 
+         obtained by looking at topics Camcom and Examples.
+
+
+2 Camcom
+ caCAMCOM is evoked as follows:
+
+ Format:
+         $ caCAMCOM [file parameter1 parameter2 ...]
+
+ where [line] is blank or any valid verb/qualifiers combination.
+
+ There are several basic verbs:
+
+ "RESET" -- clears the existing CAMAC package.
+ "ADD"   -- adds a CAMAC packet to the existing package.
+ "GO"    -- executes the CAMAC package.
+ "DO"    -- shorthand for the above three, in order.
+ "SET"   -- allows the setting of qualifiers without execution.
+ "SLEEP" -- puts the program to sleep for x milliseconds.
+ "HELP"  -- This is how you got here.
+ "SHOW"  -- Displays the values of all parameters set with ADD, SET,
+            DO, or GPIB.
+ "DUMP"  -- Display detailed buffer information
+ "TYPE"  -- Types the following string.
+ "$"     -- Spawns a command.
+ "@"     -- Executes a CAMCOM command file
+ "EXIT"  -- self-explanitory.
+ "!"     -- comment line.
+
+ Note that all qualifiers are "sticky."  That is, they set flags until they
+ are explicitly removed with the /NO... option.
+2 Examples
+ $ CAMCOM
+   CAMCOM> SET/BR=LI01/CR=16/MO=4
+   CAMCOM> DO
+    <result of F=0, BCNT=2 read will be here>
+   CAMCOM> DO
+    <another result>
+   CAMCOM> DO/F16/HEX
+    <you will be prompted for input, F=0, BCNT=2, Hex format>
+   CAMCOM> SET/DATA=(23,34)/BCNT=4  <two writes, data supplied>
+   CAMCOM> DO <execute camac>
+   CAMCOM> EXIT
+ $ <next DCL line>
+
+ Will:
+ -- Read 2 bytes from the specified module with a /F=0, print the result, 
+ -- Read another two bytes,
+ -- Prompt for a number (HEX), and Write (F16) it,
+ -- Set Bcnt=4, supply two peices of data (hex still),
+ -- Write them, and
+ -- EXIT.
+3 CAMAC_Examples
+ A pretty standard CAMCOM command file is:
+
+ 10  $ CAMCOM
+ 20    SET/BRANCH=LI02/CRATE=3/MODULE=14
+ 30    SET/P16/F=18
+ 40    SET/HEX/DATA=1AB4
+ 50    DO
+ 60    SLEEP 1000
+ 70    DO/F=0
+ 80    EXIT
+4 1_STANDARD
+ 10  $CAMCOM
+ 20    SET/BRANCH=LI02/CRATE=3/MODULE=14
+ 30    SET/P16/F=18/BCNT=10
+ 40    DO/EXIT
+ 50    1234
+ 60    2345
+ 70  $ ! WE STOPPED DATA INPUT BY RUNNING OUT OF COM FILE.
+ 80  $ ! NOTE -- WHAT WE REQUESTED ABOVE WILL OCCUR.
+4 2_READ_SAM
+ The following multi-packet will read A channel from a SAM.
+
+  10 $ Parameters expected as follows: BRANCH, CRATE, MODULE, CHANNEL
+  20 $!
+  30 $ IF P1 .EQS. "" THEN INQUIRE P1 "BRANCH "
+  40 $ IF P2 .EQS. "" THEN INQUIRE P2 "CRATE  "
+  50 $ IF P3 .EQS. "" THEN INQUIRE P3 "MODULE "
+  60 $ IF P4 .EQS. "" THEN INQUIRE P4 "CHANNEL"
+  70 $ CAMCOM
+  80 SET/BR='P1'/CR='P2'/MO='P3'
+  90 SET/DATA=('P4')
+ 100 ADD/P16/F=17/QUIET
+ 110 ADD/LONG/F=0/NOQUIET
+ 120 GO
+ 140 EXIT
+4 3_BPMSERIAL
+  10 !BPMSERIAL.COM     BY D.R. THOMPSON (PAGE 302)
+  20 !                     AND K.K. UNDERWOOD
+  30 !                  OCTOBER 1984
+  40 !
+  50 ! CAMCOM COMMAND FILE TO READ BPM MODULE SERIAL NUMBERS
+  60 !
+  70 ! TO GET A HARD COPY OF THIS COMMAND FILE'S OUTPUT,
+  80 ! GIVE THE COMMAND "SPOUT @BPMSERIAL.COM"
+  90 !
+ 100 $ SHOW TIME
+ 110 $ CAMCOM
+ 120 TYPE  "  BPM SERIAL NUMBERS OF"
+ 130 TYPE  "    INSTALLED MODULES"
+ 140 TYPE  " "
+ 150 TYPE  "  SECOND COLUMN OF NUMBERS"
+ 160 TYPE  "  IS MODULE'S SERIAL #"
+ 170 TYPE  " "
+ 180 TYPE  " "
+ 190 TYPE  " ---- LI00  CR 4 ----"
+ 200 SET/F=3/A=0/QUIET ! READ SERIAL NUMBER
+ 210 SET/BR=LI00/CR=4
+ 220 ADD/MOD=14
+ 230 ADD/MOD=16
+ 240 ADD/MOD=18
+ 250 GO
+ 260 RESET
+ 270 TYPE  " ---- LI00  CR 5 ----"
+ 280 SET/CR=5
+ 290 ADD/MOD=14
+ 300 ADD/MOD=16
+ 310 ADD/MOD=18
+ 320 GO
+ 330 RESET
+ 340 TYPE  " ---- LI01  CR 2 ----"
+    [ MANY LINES DELETED ]
+ 840 TYPE  " ---- DR  DR02 CR 5 ----"
+ 850 SET/BR=DR02/CR=5
+ 860 ADD/MOD=14
+ 870 ADD/MOD=16
+ 880 ADD/MOD=18
+ 890 GO
+ 900 EXIT
+4 @_files 
+  Nested command files are invoked with the "@" character
+2 DO
+ The qualifiers following "DO" are evaluated, and the requested CAMAC 
+ operation (i.e, single packet) is performed.  
+
+ Format:
+        CAMCOM> DO/F=16/DATA=1
+
+ The verb "DO" is shorthand for the following three lines:
+        CAMCOM> RESET
+        CAMCOM> ADD/any_valid_set_of_qualifiers
+        CAMCOM> GO
+ The user is refered to documentetion of the "ADD" command for a complete 
+ description of the available qualifiers for "DO".
+2 SET
+ The parameters associated with CAMAC operations are set.  This allows 
+ parameters to be painlessly set without actually doing any CAMAC.
+
+ Format:
+ 
+         CAMCOM> SET/BR=CL00/CR=16/MO=4/P16
+
+ The user is refered to documentation of the "ADD" and "GPIB" commands for
+ a complete description of the available qualifiers for "SET".
+2 ADD
+ The qualifiers following the "ADD" command are evaluated, and the requested
+ CAMAC operation (packet) is appended to the pending CAMAC operations.
+
+ Format:
+        CAMCOM> ADD/any_valid_set_of_qualifiers
+
+ Note that any data required by the requested operation, but not supplied by
+ a /DATA= qualifier will be prompted from the terminal.
+3 QUALIFIERS
+/BRANCH
+ /BRANCH=value
+
+ Enter Branch number (Decimal) or name.  Changing the branch implicitly does
+ a RESET.  To send the same CAMAC package to several branches in succession,
+ build up the package in a separate command file.  Then invoke the command 
+ file with "@" once for each branch.
+ 
+/CRATE
+ /CRATE=value
+
+ Enter Crate Number(Decimal)
+/MODULE
+ /MODULE=value
+
+ Enter Module Number(Decimal)
+/CTLW
+ /CTLW=value
+ /NOCTLW (D)
+
+ Enter CTLW(Hex).  The CTLW bits selected by using qualifiers such as
+ /F=16 are OR'ed with the supplied value.
+/F
+ /F=value
+
+ Enter Function Code.  Initialized to 0.
+/ADDRESS
+ /ADDRESS=value
+
+ Enter Sub Address(Decimal).  Initialized  to 0.
+/BCNT
+ /BCNT=value
+ /NOBCNT (D)
+
+ Enter Byte Count to be transfered. Defaults to mode indicated
+ by /P32, /P24, /P16, /P8, or /LONGWORD.  ( 4, 4, 2, 1, 4 ).
+/DATA
+ /DATA=value
+ /DATA=(value1,value2,...)
+ /NODATA  (D)
+
+ A data list is read from the  command line.  If this option
+ is not selected or de-selected, data is prompted for.
+
+ The Qualifiers /REPEAT and /FILL=value affect the input data.
+
+ If the input data is desired to be a repeated pattern, than:
+ /DATA=(1,2,3)/REPEAT would result in data of 1,2,3,1,2,3,...
+
+ If the unspecified input terms should not be 0, than:
+ /DATA=(1,2,3)/FILL=4 would result in data of 1,2,3,4,4,4,...
+
+ /REPEAT supercedes /FILL
+/REPEAT
+ /REPEAT
+ /NOREPEAT (D)
+ 
+ The input data block is repeated to satisfy the BCNT request.
+
+ For more information, see /DATA.
+/FILL
+ /FILL=value
+ /NOFILL (D)  (same as /fill=0)
+ 
+ The unspecified input data required for transaction is specified.
+
+ For more information, see /DATA.
+/HEX
+ /HEX
+ /NOHEX (D)
+
+ Input data will be read in HEX format. (Default is Decimal format.)
+/INPUT
+ /INPUT=file-spec
+ /NOINPUT (D)
+
+ Optional Input qualifier.  Input data read from listed file.
+ If this option is not selected or de-selected, data is prompted for.
+/OUTPUT
+ /OUTPUT=file-spec
+ /OUTPUT=NUL0:    (Forces output to the null device.)
+ /NOOUTPUT
+
+ Opens an Output file for data from selected reads.  Status information
+ continues to go to the SYS$OUTPUT device.
+ /NOOUTPUT closes the file, and output goes to the SYS$OUTPUT device.
+/QUIET
+ /QUIET
+ /NOQUIET (D)
+
+ Summary information associated with CAMIO is suppressed.
+/VERIFY
+ /VERIFY
+ /NOVERIFY (D)
+ 
+ Verify echos the command string to CAMCOM> to the SYS$OUTPUT device.
+ This is useful when executing from a command file.
+/PROMPT
+ /PROMPT   (D)
+ /PROMPT="any string"
+ /NOPROMPT
+
+ Controls if the "Enter Data, <^Z> to quit" prompt is issued for unsatisfied
+ data requests.  An alternate prompt is used if provided.
+/EXIT
+ Exit CAMCOM when finished processing the DO command.
+/P8
+/P16
+/P24
+/P32
+/LONGWORD
+
+ /P8      - Data will be sent in 1 byte packets.
+ /P16 (D) - Data will be packed in 2 byte packets.
+ /P24     - Same as /P32.
+ /P32     - Data are read from the 24 bit CAMAC dataway in 4 byte packets.
+ /LONGWORD- Longword affects input/output to terminal.
+             Terminal I/O is done  as if /P32 option were selected,
+             but CAMAC operations are done /P16.
+/REPACK
+ /REPACK
+ /NOREPACK
+
+ Turns on the "re_pack" bit for SLC camac only.  Option allows long data
+ transfers to be executed as a series of shorter transactions.
+/PIOP_CHECKSUM
+ /PIOP_CHECKSUM
+ /NOPIOP_CHECKSUM
+ 
+ Enters a PIOP checksum following last entry in the input list.
+/XM1
+/XM2
+/QM1
+/QM2
+/SA
+/SC
+/SN
+/IN
+/ILQ
+ /option
+ /NOoption
+ 
+ The following is a breif extract of the SLC Basic Users Guide or 
+ SLC Hardware Manual's description of the various scan mode and 
+ terminate options.
+
+   QM2  = Terminate packet if Q=0.
+   QM1  = Transfer data iff Q=1.
+   XM2  = Terminate packet if X=0.
+   XM1  = Transfer data iff X=1.
+   
+   SA   = Enable subaddress counter.
+   SN   = Enable station address counter.
+   SC   = Enable crate counter.
+   
+   ILQ  = Increment enabled counters only if Q=0.
+   IN   = Reset least significant enabled counter and increment next 
+          most significant enabled counter if X=0.
+   
+ Setting XM1 or QM1 allows actual data transfers only if X=1 (if XM1
+ set) or Q=1 (if QM1 set).
+   
+ SA, SN, and SC enable the subaddress, station, and crate counters
+ respectively. The subaddress counter is the least significant
+ counter, and the crate counter is most significant.
+  
+ A detailed description of the ILQ and IN options are found in the 
+ above sources.
+  /DEBUG=n
+  /NODEBUG (D)
+
+Sets a debug level (0,1, or 2) so that internal parsing results can be traced.
+
+2 GO
+ Executes the CAMAC package set up with a previous set of ADD or DO 
+ commands.
+
+ Format:
+        CAMCOM> GO
+2 RESET
+ Clears the existing CAMAC package.  Any CAMAC operations which have been 
+ programmed with an ADD or DO command are lost.
+
+ Format:
+        CAMCOM> RESET
+
+ This command has no effect on the normally "sticky" parameters.
+2 SLEEP
+ A delay of <P1> milliseconds is imposed.
+
+ Format:
+        CAMCOM> SLEEP 1000
+
+ Note: Sleep has a maximum duration of 10 seconds.
+
+ Note: This command is executed immediately,  and cannot be used to slow
+ down the execution of a single CAMAC package.
+2 SHOW
+ Displays the values of the parameters set with the
+ SET, ADD, DO, and GPIB commands.
+2 DUMP
+ Gives detailed packet information for debugging
+2 EXIT
+ Exits CAMCOM.
+2 TYPE
+ Types the following line to the sys$output device.
+
+ Format:
+        CAMCOM> TYPE anything whatsoever
+
+  Especially usefull for exec files.
+2 Values
+ The following rules exist for any value that is prompted for, or required 
+ by a qualifier such as /BR=value.
+
+ 1) Except for data, the default data type is described in the HELP utility
+    for the qualifier.  (Generally Decimal).
+
+ 2) The /HEX or /NOHEX may be used to toggle the default data type for
+    CAMAC data input between Hex and Decimal.
+
+ 3) Data values may contain the following specific type modifiers, which
+    superceed the defaults:
+    
+    %Dnnnn   --  nnnn Decimal
+    %Xnnnn   --  nnnn Hexidecimal
+    0Xnnnn   --  nnnn Hexidecimal
+
+ 4) DCL subsitution will occur if the symbol is enclosed in single quotes.
+    ie:  /BRANCH='P1' will use the value of the DCL symbol P1 for branch.
+2 Output
+ CAMAC reads are displayed in the following format:
+
+ <entry>  <integer>  <hex>   <real>
+   0            20   0014     0.00012   
+   1             0   0000     0.00000
+
+ Note: (***)   real format is only for /LONGWORD CAMAC data specifications.
+ 
+ 
+ Output may be directed to a file by using the /OUTPUT=file-spec qualifier. 
+ If the "file-spec" is the null device, /OUTPUT=NUL0:, the output from
+ CAMCOM> is thrown away.
+2 Comments
+ 
+ Any line with with an exclamation point (!) in column 1 is treated
+ as a comment.
+ 
+ For any valid line with an imbedded exclamation point, the part of 
+ the line following the "!" is treated as a comment.
+2 Control_C
+ Typing the control C (^C) will abort the current terminal action.
+ 
+ If the user is inputing commands to CAMCOM>, the command line is ignored.
+ 
+ If the user is in data collection mode, the CAMAC activity is aborted.
+ 
+ If the user is receiving output, the output is terminated.  Any summary
+ information from the CAMAC transfer is not inhibited.
+ 
+ After the ^C, the program will respond with the normal CAMCOM> prompt.
+2 @ 
+ The command processes an execution module.  The module (file) may contain
+ any valid CAMCOM command.  Any data required by the commands will come 
+ from the sys$input device (terminal or .com file).
+
+ Format:
+         CAMCOM> @filename
+
+ The default file extension is .CAM
+2 $
+ The command following a $ is spawned onto the VAX.  This is useful for
+ activities such as:
+ 
+ Format:
+         CAMCOM> $PRINT JUNK.DOC

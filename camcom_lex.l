@@ -29,7 +29,7 @@
 
 S(E(T)?)?                            { BEGIN CV; yylval="SET"; verb_do_set_add(yylval); return TOKVERB1; }
 ADD                                  { BEGIN CV; yylval="ADD"; verb_do_set_add(yylval); return TOKVERB1; }
-D(O(I(T)?)?)?                        { BEGIN CV; yylval="DOIT"; verb_do_set_add(yylval); return TOKVERB1;}
+DO(I(T)?)?                           { BEGIN CV; yylval="DOIT"; verb_do_set_add(yylval); return TOKVERB1;}
 
 SHOW|RESET|EXIT|DUMP                 {  yylval=yytoupper(yytext);  return TOKVERB2; }
 
@@ -43,7 +43,7 @@ FOREVER                              { yylval="FOREVER"; return TOKNYI; }
 
 (TYPE|HELP).*                        { yylval=yytoupper4(yytext);  return TOKVERB3; }
 
-(\$).*                                 { yylval=yytext;  return TOKVERB3; }
+(\$).*                                 { yylval=yytext;  return TOKVERB3; } /* No uppercase on purpose */
 
 REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
@@ -285,8 +285,13 @@ void start_include(int phase)
      int param_number;
      int param_ref_index;
 
+/* 0 = use camcom.tmp (transcription of direct DO command), 1 = get normal @ filename */
 
-/* 2 = value, 3 = parameter, 4 = string */
+     if(phase==0)
+        {
+           strcpy(fn,"camcom.tmp");
+           calling_parameter_number=0;
+        }
 
      if(phase==1)
         {
@@ -297,6 +302,8 @@ void start_include(int phase)
         }
 
      param_index=(include_stack_ptr+1)*10+(calling_parameter_number++);
+
+/* 2 = value, 3 = parameter, 4 = string */
 
      if(phase==2)
         {
@@ -328,6 +335,7 @@ void start_include(int phase)
          printf("Includes nested too deeply processing file: %s\n",yytext);
          exit(1);
        }
+
      include_stack[include_stack_ptr++]=YY_CURRENT_BUFFER;
      set_calling_level(include_stack_ptr);
      yyin = fopen(fn,"r");
@@ -342,5 +350,4 @@ void start_include(int phase)
              }
 
         if(debug_level()>1) printf("Include stack Pointer: %d\n",include_stack_ptr);
-
 }
