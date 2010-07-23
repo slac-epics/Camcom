@@ -706,8 +706,8 @@ void help_type_param(const char* token_p)
       }
      if (!strncmp(token_p,"HELP",4))
        {
-         printf("Executing vmshelp.py camcom.help\n");
-         system("vmshelp.py camcom.help");
+         printf("Executing man camcom.1\n");
+         system("man $EPICS_EXTENSIONS/src/Camcom/camcom.1");
        }
      return;
      }

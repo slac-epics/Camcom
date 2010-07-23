@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     if(strncmp(argv[1],"-h",2)==0)
       {
         printf("Executing vmshelp.py camcom.help");
-        system("vmshelp.py camcom.help");
+        system("vmshelp.py $EPICS_EXTENSIONS/src/Camcom/camcom.help");
         return 0;
       }
 
