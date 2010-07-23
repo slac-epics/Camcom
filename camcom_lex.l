@@ -43,6 +43,8 @@ FOREVER                              { yylval="FOREVER"; return TOKNYI; }
 
 (TYPE|HELP).*                        { yylval=yytoupper4(yytext);  return TOKVERB3; }
 
+(\$).*                                 { yylval=yytext;  return TOKVERB3; }
+
 REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 
@@ -110,7 +112,7 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 <DT>\(
 
-<DT>[A-Z0-9,]+                              { BEGIN CV; yylval=yytoupper(yytext); return TOKMSTRING;}
+<DT>[%A-Z0-9,]+                              { BEGIN CV; yylval=yytoupper(yytext); return TOKMSTRING;}
 
 <CV>\)
 
@@ -214,6 +216,8 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 <RHS>0[xX][0-9A-F]+                           { yylval=yytoupper(yytext);  BEGIN CV; return TOKHEXNUM;}
 
+<RHS>%[xXdD][0-9A-F]+                           { yylval=yytoupper(yytext);  BEGIN CV; return TOKHEXNUM;}
+
 <RHS>[0-9A-F]+                           { yylval=yytoupper(yytext);  BEGIN CV; return TOKHEXNUM;}
 
 <RHS>[A-Z0-9\.\-\_\~]+                           { yylval=yytoupper(yytext);  BEGIN CV; return TOKMSTRING;}
@@ -226,7 +230,7 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 \'P[0-9]\'?                          { yylval=yytoupper(yytext);   return TOKPARAM;}
 
-[!\$].*                                  return TOKCOMMENT ;
+!.*                                  return TOKCOMMENT ;
 
 .             printf("Unknown character ");
 

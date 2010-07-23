@@ -94,6 +94,16 @@ long debug_level()
   return DEBUG;
 }
 
+void check_for_action()
+{
+  if(  (strncmp(main_verb,"GO",2)==0 || strncmp(main_verb,"DOIT",4)==0) )
+    {
+        ca_activity();
+    }
+
+  return;
+}
+
 void prepare_real_packet()
 {
   int i,j;
@@ -689,9 +699,15 @@ void help_type_param(const char* token_p)
        {
          printf("%s\n",token_p+4);
        }
-     else
+     if (!strncmp(token_p,"$",1))
+      {
+        printf("Executing [%s]\n",token_p+1);
+        system(token_p+1);
+      }
+     if (!strncmp(token_p,"HELP",4))
        {
-         printf("Help file: %s\n",token_p+4);
+         printf("Executing vmshelp.py camcom.help\n");
+         system("vmshelp.py camcom.help");
        }
      return;
      }
@@ -860,17 +876,22 @@ void token_with_string(const char* token_p, const char *param_p)
 void token_with_number(const char* token_p, const char *param_p)
 {
   char* end;
+  int use_hex;
+  char* local_p;
+  local_p=param_p;
   if (current_index <= N_val_index)
     {
       params_valued[current_index]=1;
-      if(strncmp(param_p,"0X",2)==0) params_numeric[current_index]=strtol(param_p+2,&end,16);
-      else
-	{
-          if(!params_noval[hex_index] || current_index<=address_index) 
-                params_numeric[current_index]=strtol(param_p,&end,10);
-          else 
-                params_numeric[current_index]=strtol(param_p,&end,16);
-	}
+
+      if(params_noval[hex_index]) use_hex=1;
+      else                        use_hex=0;
+      if(strncmp(param_p, "%D",2)==0) {use_hex=0; local_p+=2;}
+      if((strncmp(param_p,"0X",2)==0) || (strncmp(param_p,"%X",2)==0)) {use_hex=1; local_p+=2;}
+      if(current_index==address_index) use_hex=0;
+
+      if(use_hex) params_numeric[current_index]=strtol(local_p,&end,16);
+      else        params_numeric[current_index]=strtol(local_p,&end,10);
+
       if(DEBUG>1) printf("Value %ld found for index %d, modifier %s \n",
 	 params_numeric[current_index],current_index, token_p);
       if(current_index==bcnt_index) packet_wcmax[current_packet]=params_numeric[bcnt_index]/2;
@@ -912,6 +933,7 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
   char* cho;
   char* end;
   int local_hex;
+  int local_dec;
 
 /*--------------------------------------------------------------------------*/
 
@@ -922,23 +944,35 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
     cho = local_copy;
     out_array[0]=params_numeric[data_index]=0;
     /* Check for 0x preceeding number */
-    if(strncmp(local_copy,"0X",2)==0)
+    if( (strncmp(local_copy,"0X",2)==0) || (strncmp(local_copy,"%X",2)==0) )
       {
         local_hex=1;
         local_copy+=2;
         cho=local_copy;
-	/*        printf("Found 0x prefix\n"); */
+	if(DEBUG>1) printf("Found 0x or percent-X prefix\n");
       }
     else local_hex=0;
+
+    if( strncmp(local_copy,"%D",2)==0 )
+      {
+        local_dec=1;
+        local_copy+=2;
+        cho=local_copy;
+	if(DEBUG>1) printf("Found percent-D prefix\n");
+      }
+    else local_dec=0;
 
     for (;;) 
    {
       if (ch == 0 || ch == ',')
         {
           *(local_copy)=0;
-	  /*	            printf("One entry for %d = %s\n",array_index,cho); */ 
-	  if (params_noval[hex_index] || local_hex==1 ) out_array[array_index++]=strtol(cho,&end,16);
-	      else                                      out_array[array_index++]=strtol(cho,&end,10);
+	  if(DEBUG>1) printf("One entry for %d = %s\n",array_index,cho);  
+	  if (local_hex) out_array[array_index++]=strtol(cho,&end,16);
+	  if (local_dec) out_array[array_index++]=strtol(cho,&end,10);
+          if (!local_dec&&!local_hex&&params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,16);
+          if (!local_dec&&!local_hex&&!params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,10);
+
           params_numeric[data_index]++; /* number of data elements */
           out_array[array_index]=0; 
 	  cho=local_copy+1;
@@ -949,14 +983,23 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
     /* Check for 0x preceeding number */
 
        local_copy++;
-       if(strncmp(local_copy,"0X",2)==0)
+       if((strncmp(local_copy,"0X",2)==0) || (strncmp(local_copy,"%X",2)==0))
          {
            local_hex=1;
            local_copy+=2;
            cho=local_copy;
-	   /*          printf("Found 0x prefix after first\n"); */
+	   if(DEBUG>1) printf("Found 0x or percent-X prefix after first\n");
          }
        else local_hex=0;
+
+       if(strncmp(local_copy,"%D",2)==0)
+         {
+           local_dec=1;
+           local_copy+=2;
+           cho=local_copy;
+	   if(DEBUG>1)  printf("Found percent-D prefix after first\n");
+         }
+       else local_dec=0;
 
 	}
 	if(ch == 0) return;
