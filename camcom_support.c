@@ -397,25 +397,25 @@ void ca_activity()
 #define BUFLEN 4096
 #define IOC_NAME params_values[branch_index]
 #define ID_AT 0
-#define ST_AT "%s:CAMCOM:ACTIVE_TOKEN"
+#define ST_AT "CAMC:%s:CV01:ACTIVE_TOKEN"
 #define ID_NT 1
-#define ST_NT "%s:CAMCOM:NEW_TOKEN"
+#define ST_NT "CAMC:%s:CV01:NEW_TOKEN"
 #define ID_INB 2
-#define ST_INB "%s:CAMCOM:INBUFF"
+#define ST_INB "CAMC:%s:CV01:INBUFF"
 #define ID_INL 3
-#define ST_INL "%s:CAMCOM:INBUFF:LEN"
+#define ST_INL "CAMC:%s:CV01:INBUFF_LEN"
 #define ID_OUTB 4
-#define ST_OUTB "%s:CAMCOM:OUTBUFF"
+#define ST_OUTB "CAMC:%s:CV01:OUTBUFF"
 #define ID_OUTL 5
-#define ST_OUTL "%s:CAMCOM:OUTBUFF:LEN"
+#define ST_OUTL "CAMC:%s:CV01:OUTBUFF_LEN"
 #define ID_ST 6
-#define ST_ST "%s:CAMCOM:STATUS"
+#define ST_ST "CAMC:%s:CV01:STATUS"
 #define ID_NOTE 7
-#define ST_NOTE "%s:CAMCOM:NOTE"
+#define ST_NOTE "CAMC:%s:CV01:NOTE"
 #define ID_VER 8
-#define ST_VER "%s:CAMCOM:SEQ:VER"
+#define ST_VER "CAMC:%s:CV01:SEQ_VER"
 #define ID_NTP 9
-#define ST_NTP "%s:CAMCOM:NEW_TOKEN.PROC"
+#define ST_NTP "CAMC:%s:CV01:NEW_TOKEN.PROC"
 #define CAMCOM_FREE 0
 #define CAMCOM_TAKEN 1
 #define CAMCOM_HOST_DONE 2
@@ -882,6 +882,8 @@ void token_with_number(const char* token_p, const char *param_p)
   if (current_index <= N_val_index)
     {
       params_valued[current_index]=1;
+      /* Keep a copy as a string too */
+      params_values[current_index]=strdup(param_p);
 
       if(params_noval[hex_index]) use_hex=1;
       else                        use_hex=0;
