@@ -35,6 +35,7 @@
 %token  TOKMSTRING
 %token  TOKDATA
 %token  TOKNYI
+%token  TOKEXIT
 
 %%
 
@@ -51,6 +52,7 @@ command:
      | verb_type3 {issue_prompt(6);}
      | verb_type4 {issue_prompt(7);}
      | verb_type5 {issue_prompt(8);}
+     | verb_exit {_exit(0);}
      | TOKTERM {issue_prompt(9);}
 ;
 
@@ -67,7 +69,11 @@ verb_type3:
        TOKVERB3 TOKTERM {if(DEBUG1)printf("%s\n",(char*)$1); help_type_param((char*)$1);}
 ;
 verb_type2:
-       TOKVERB2 TOKTERM {if(show_reset_exit((char*)$1)==1) YYACCEPT;}
+       TOKVERB2 TOKTERM {show_reset_dump((char*)$1);}
+;
+
+verb_exit:
+       TOKEXIT TOKTERM {printf("CAMCOM terminating\n"); }
 ;
 
 verb_type1:

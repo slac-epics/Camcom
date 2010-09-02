@@ -42,7 +42,7 @@ void ca_activity();
 
 void check_for_action();
 
-long show_reset_exit(const char *token_p);
+long show_reset_dump(const char *token_p);
 
 long control_word_getter();
 
