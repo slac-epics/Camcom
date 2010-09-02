@@ -31,7 +31,9 @@ S(E(T)?)?                            { BEGIN CV; yylval="SET"; verb_do_set_add(y
 ADD                                  { BEGIN CV; yylval="ADD"; verb_do_set_add(yylval); return TOKVERB1; }
 DO(I(T)?)?                           { BEGIN CV; yylval="DOIT"; verb_do_set_add(yylval); return TOKVERB1;}
 
-SHOW|RESET|EXIT|DUMP                 {  yylval=yytoupper(yytext);  return TOKVERB2; }
+SHOW|RESET|DUMP                      {  yylval=yytoupper(yytext);  return TOKVERB2; }
+
+EXIT|QUIT                            {  yylval=yytoupper(yytext); return TOKEXIT; }
 
 GO                                   { yylval="GO"; verb_do_set_add(yylval); return TOKVERB4;}
 
@@ -112,7 +114,7 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 <DT>\(
 
-<DT>[%A-Z0-9,]+                              { BEGIN CV; yylval=yytoupper(yytext); return TOKMSTRING;}
+<DT>[%A-Z0-9,\']+                              { BEGIN CV; yylval=yytoupper(yytext); return TOKMSTRING;}
 
 <CV>\)
 

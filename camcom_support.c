@@ -318,10 +318,9 @@ void store_index(int index_value)
   return;
 }
 
-long show_reset_exit(const char* token_p)
+long show_reset_dump(const char* token_p)
 {
 if(DEBUG>1)printf("Simple verb %s found\n",token_p);
- if(strncmp(token_p,"EXIT",4)==0) return 1;
  if(strncmp(token_p,"SHOW",4)==0) print_token_table();
  if(strncmp(token_p,"RESET",5)==0) camcom_packet_clean_all();
  if(strncmp(token_p,"DUMP",4)==0) dump_packet(); 
@@ -706,10 +705,15 @@ void help_type_param(const char* token_p)
       }
      if (!strncmp(token_p,"HELP",4))
        {
+	 /*
+        printf("Executing vmshelp.py camcom.help");
+        system("vmshelp.py $EPICS_EXTENSIONS/src/Camcom/camcom.help");
          printf("Executing man camcom.1\n");
+         execlp("man","man","$EPICS_EXTENSIONS/src/Camcom/camcom.1",0);
+	 */
          system("man $EPICS_EXTENSIONS/src/Camcom/camcom.1");
        }
-     return;
+     return; 
      }
 
 void camcom_sleep(int i)
@@ -936,6 +940,8 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
   char* end;
   int local_hex;
   int local_dec;
+  int param_number;
+  char param_char;
 
 /*--------------------------------------------------------------------------*/
 
@@ -964,17 +970,37 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
       }
     else local_dec=0;
 
+    if ( strncmp(local_copy,"'P",2)==0 )
+      {
+        param_char=*(local_copy+2);
+        param_number= param_char - '0';
+        if(DEBUG>1) printf("Found parameter %d \n",param_number);
+        local_copy+=2;
+        ch=*local_copy;
+        if(ch=='\'') ch=*(++local_copy);
+      }
+    else param_number=0;
+
     for (;;) 
    {
-      if (ch == 0 || ch == ',')
+      if (ch == 0 || ch == ',' )
         {
           *(local_copy)=0;
-	  if(DEBUG>1) printf("One entry for %d = %s\n",array_index,cho);  
-	  if (local_hex) out_array[array_index++]=strtol(cho,&end,16);
-	  if (local_dec) out_array[array_index++]=strtol(cho,&end,10);
-          if (!local_dec&&!local_hex&&params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,16);
-          if (!local_dec&&!local_hex&&!params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,10);
-
+	  if(DEBUG>1) printf("One entry for %d = %s\n",array_index,cho);
+          if (param_number>0)
+	    {
+	      param_number+=10*calling_level-1;  /* nested parameters */
+	      out_array[array_index++]=calling_param_values[param_number];
+	      if(DEBUG>1) printf("Value %d found for data element %d, parameter %d \n",
+				     calling_param_values[param_number],array_index-1,param_number);
+	    }
+          else
+	    {  
+	      if (local_hex) out_array[array_index++]=strtol(cho,&end,16);
+	      if (local_dec) out_array[array_index++]=strtol(cho,&end,10);
+              if (!local_dec&&!local_hex&&params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,16);
+              if (!local_dec&&!local_hex&&!params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,10);
+	    }
           params_numeric[data_index]++; /* number of data elements */
           out_array[array_index]=0; 
 	  cho=local_copy+1;
@@ -1003,6 +1029,17 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
          }
        else local_dec=0;
 
+      if ( strncmp(local_copy,"'P",2)==0 )
+        {
+          param_char=*(local_copy+2);
+          param_number= param_char - '0';
+          if(DEBUG>1) printf("Found parameter %d \n",param_number);
+          local_copy+=2;
+          ch=*local_copy;
+          if(ch=='\'') ch=*(++local_copy);
+        }
+      else param_number=0;
+
 	}
 	if(ch == 0) return;
 
@@ -1019,6 +1056,7 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
 void set_calling_level(int level)
 {
   calling_level=level;
+  /*  printf("set_calling_level to %d\n",calling_level); */
   return;
 }
 
