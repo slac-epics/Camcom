@@ -32,7 +32,7 @@ void token_noval ();
 
 void token_noval_no ();
 
-void unpack_data (const char *ptr,unsigned long out_array[10]);
+void unpack_data (const char *ptr);
 
 void verb_do_set_add(const char *token_p);
 

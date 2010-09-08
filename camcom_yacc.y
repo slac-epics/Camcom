@@ -142,7 +142,10 @@ int main(int argc, char *argv[]) {
       if(i>1) 
        {
          calling_param_string[i-2]=strdup(argv[i]);
-         calling_param_values[i-2]=strtol(argv[i],&end,10);
+         if((strncmp(argv[i],"%x",2)==0)||strncmp(argv[i],"%X",2)==0)
+	     calling_param_values[i-2]=strtol(argv[i]+2,&end,16);
+         else
+             calling_param_values[i-2]=strtol(argv[i],&end,10);
          printf(" : parameter %d, numeric value = %d",i-2,calling_param_values[i-2]);
          if(argv[i]=='\0' || *end!='\0') 
            {

@@ -368,6 +368,7 @@ void camcom_packet_clean_sticky()
   params_noval[p16_index]=0;
   params_noval[p8_index]=0;
   params_noval[longword_index]=0;
+  params_noval[piop_checksum_index]=0;
 
   params_values[data_index]=0;
   params_numeric[data_index]=0;
@@ -666,6 +667,8 @@ void token_noval()
 {
   if ( current_index <  N_noval_index) params_noval[current_index]=1; 
   if(DEBUG>1) printf("Setting token %d on\n",current_index); 
+  /* Redo the data parse if CHECKSUM found */
+  if (current_index == piop_checksum_index) unpack_data(params_values[data_index]); 
   return;
 }
 
@@ -673,6 +676,8 @@ void token_noval_no()
 {
   if ( current_index <  N_noval_index )   params_noval[current_index]=0;
   if(DEBUG>1) printf("Setting token %d off\n",current_index);
+  /* Redo the data parse if CHECKSUM found */
+  if ( current_index == piop_checksum_index) unpack_data(params_values[data_index]); 
   if ( current_index==noinput_index) params_valued[input_index]=0;
   if ( current_index==nooutput_index) 
      {
@@ -835,7 +840,6 @@ void get_data_if_needed()
 
 void token_with_string(const char* token_p, const char *param_p)
 {
-  int i;
   if (current_index <= N_val_index )
     {
       params_valued[current_index]=1;
@@ -854,26 +858,8 @@ void token_with_string(const char* token_p, const char *param_p)
           params_valued[current_index]=0;
 	}
     }
-  if (current_index == data_index)
-    {
-      unpack_data(params_values[data_index],data_array); 
-        for(i=0;i<params_numeric[data_index];i++)
-	  {
-            packet_data[current_packet][i+1]=data_array[i];
-            if(DEBUG>1)
-	      {
-	         if(params_noval[hex_index]==0) printf("Decimal data element %d = %ld\n",i,data_array[i]);
-	         else                           printf("Hex data element %d = 0x%lx\n",i,data_array[i]);
-	      }
-	  }
-    }
-  /* Check for BCNT specified */
-  if(params_numeric[bcnt_index]==0)
-    {
-        packet_wcmax[current_packet]=params_numeric[data_index];
-        if(DEBUG>1) 
-            printf("Setting wcmax of packet %d to %d in TOKEN_WITH_STRING\n",current_packet,packet_wcmax[current_packet]);
-    }
+  /* go parse the data in */
+  if (current_index == data_index) unpack_data(params_values[data_index]); 
   return;
 }
 
@@ -931,7 +917,7 @@ void token_with_number(const char* token_p, const char *param_p)
   return;
 }
 
-void unpack_data (const char *ptr,unsigned long out_array[67])
+void unpack_data (const char *ptr)
 {
   int array_index=0;
   char ch;
@@ -942,6 +928,8 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
   int local_dec;
   int param_number;
   char param_char;
+  long piop_checksum=0;
+  int i;
 
 /*--------------------------------------------------------------------------*/
 
@@ -950,7 +938,7 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
     while (ch == ' ' || ch == '\t')
         ch = *(++local_copy);
     cho = local_copy;
-    out_array[0]=params_numeric[data_index]=0;
+    data_array[0]=params_numeric[data_index]=0;
     /* Check for 0x preceeding number */
     if( (strncmp(local_copy,"0X",2)==0) || (strncmp(local_copy,"%X",2)==0) )
       {
@@ -990,23 +978,23 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
           if (param_number>0)
 	    {
 	      param_number+=10*calling_level-1;  /* nested parameters */
-	      out_array[array_index++]=calling_param_values[param_number];
+	      data_array[array_index++]=calling_param_values[param_number];
 	      if(DEBUG>1) printf("Value %d found for data element %d, parameter %d \n",
 				     calling_param_values[param_number],array_index-1,param_number);
 	    }
           else
 	    {  
-	      if (local_hex) out_array[array_index++]=strtol(cho,&end,16);
-	      if (local_dec) out_array[array_index++]=strtol(cho,&end,10);
-              if (!local_dec&&!local_hex&&params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,16);
-              if (!local_dec&&!local_hex&&!params_noval[hex_index]) out_array[array_index++]=strtol(cho,&end,10);
+	      if (local_hex) data_array[array_index++]=strtol(cho,&end,16);
+	      if (local_dec) data_array[array_index++]=strtol(cho,&end,10);
+              if (!local_dec&&!local_hex&&params_noval[hex_index]) data_array[array_index++]=strtol(cho,&end,16);
+              if (!local_dec&&!local_hex&&!params_noval[hex_index]) data_array[array_index++]=strtol(cho,&end,10);
 	    }
           params_numeric[data_index]++; /* number of data elements */
-          out_array[array_index]=0; 
+          data_array[array_index]=0; 
 	  cho=local_copy+1;
 
        if(DEBUG>1) 
-         printf("Data value %d = %ld, or 0x%lx\n",array_index,out_array[array_index-1],out_array[array_index-1]); 
+         printf("Data value %d = %ld, or 0x%lx\n",array_index,data_array[array_index-1],data_array[array_index-1]); 
 
     /* Check for 0x preceeding number */
 
@@ -1041,16 +1029,47 @@ void unpack_data (const char *ptr,unsigned long out_array[67])
       else param_number=0;
 
 	}
-	if(ch == 0) return;
+	if(ch == 0) break;
 
        ch = *(++local_copy);
 
    }
+
+    /* Take a 16-bit sum and store it as the next data item if PIOP_CHECKSUM was specified */
+
+    if(params_noval[piop_checksum_index]!=0)
+      {
+        for(i=0;i<params_numeric[data_index];i++)
+	  {
+            piop_checksum+=data_array[i]&0xffff;
+	    piop_checksum+=(data_array[i]>>16)&0xffff;
+            if(DEBUG>1) printf("Checksum at item %d = Dec: %ld, Hex: %lx\n",i,piop_checksum,piop_checksum);
+ 	  }
+        piop_checksum&=0xffff;
+        if(DEBUG>1) printf("Final checksum = Dec: %ld, Hex: %lx\n",piop_checksum,piop_checksum);
+        data_array[array_index++]=piop_checksum;
+        data_array[array_index]=0;
+        params_numeric[data_index]++;
+      }
+
+        for(i=0;i<params_numeric[data_index];i++)
+	  {
+            packet_data[current_packet][i+1]=data_array[i];
+            if(DEBUG>1)
+	      {
+	         if(params_noval[hex_index]==0) printf("Decimal data element %d = %ld\n",i,data_array[i]);
+	         else                           printf("Hex data element %d = 0x%lx\n",i,data_array[i]);
+	      }
+	  }
+
+  /* Check for BCNT specified */
+
     if(params_numeric[bcnt_index]==0)
       {
       packet_wcmax[current_packet]=params_numeric[data_index];
       if(DEBUG>1) printf("WCMAX for packet %d set to %ld in UNPACK\n",current_packet,params_numeric[data_index]);
       }
+    return;
 }
 
 void set_calling_level(int level)

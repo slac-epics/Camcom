@@ -170,7 +170,7 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 <CV>H(E(X)?)?                               { store_index(hex_index); yylval="HEX";   return TOKNOVAL; }
 
-<CV>PIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="PIOP_CHECKSUM";   return TOKNYI; }
+<CV>PIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="PIOP_CHECKSUM";   return TOKNOVAL; }
 
 <CV>RE_PACK                 { store_index(re_pack_index); yylval=yytoupper(yytext);   return TOKNOVAL; }
 
@@ -180,7 +180,7 @@ REW(I(N(D)?)?)?                      { yylval="REWIND";  return TOKNYI; }
 
 <CV>NOH(E(X)?)?                                { store_index(hex_index); yylval="NOHEX";   return TOKNEGATED; }
 
-<CV>NOPIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="NO_PIOP_CHECKSUM";   return TOKNYI; }
+<CV>NOPIOP(_(C(H(E(C(K(S(U(M)?)?)?)?)?)?)?)?)?    { store_index(piop_checksum_index); yylval="NO_PIOP_CHECKSUM";   return TOKNEGATED; }
 
 <CV>NORE_PACK                  { store_index(re_pack_index); yylval=yytoupper(yytext);   return TOKNEGATED; }
 
@@ -269,7 +269,7 @@ int yywrap(void) {
 
   if(debug_level()>1) printf("Include stack Pointer: %d\n",include_stack_ptr);
 
-  if(--include_stack_ptr<0) return 1;
+  if(--include_stack_ptr<0) exit(0);
 
   set_calling_level(include_stack_ptr);
   yy_delete_buffer(YY_CURRENT_BUFFER);
