@@ -468,10 +468,13 @@ void ca_activity()
 
   status = CAMCOM_TAKEN;
   state=ca_put(DBR_SHORT, id[ID_ST], &status); ca_pend_io(1.0);
+  /* 
+  **Status is now "TAKEN" so any error exits from here must free it.
+  */
   sprintf(note_name,"Ron testing on %s",IOC_NAME);
   state=ca_put(DBR_STRING, id[ID_NOTE],&note_name);
 
-  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
+  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); goto free_status;}
 
   /* Poke the token generator in the database */
 
@@ -480,7 +483,7 @@ void ca_activity()
   ca_search_and_connect(pv_name, &id[ID_NTP], NULL, NULL); ca_pend_io(1.0);
   i=1;
   state=ca_put(DBR_SHORT, id[ID_NTP], &i); ca_pend_io(1.0);
-  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
+  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); goto free_status;}
 
   /* Get the new token value */
 
@@ -488,7 +491,7 @@ void ca_activity()
   if(DEBUG>1) printf("PV NEW TOKEN name = %s\n",pv_name);
   ca_search_and_connect(pv_name, &id[ID_NT], NULL, NULL); ca_pend_io(1.0);
   state=ca_get(DBR_SHORT, id[ID_NT], &new_token); ca_pend_io(1.0);
-  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
+  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); goto free_status;}
   if(DEBUG>1) printf("New token = %d\n",new_token);
 
   /* Get the current active token value */
@@ -497,10 +500,10 @@ void ca_activity()
   if(DEBUG>1) printf("PV ACTIVE TOKEN name = %s\n",pv_name);
   ca_search_and_connect(pv_name, &id[ID_AT], NULL, NULL); ca_pend_io(1.0);
   state=ca_get(DBR_SHORT, id[ID_AT], &active_token); ca_pend_io(1.0);
-  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
+  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); goto free_status;}
   if(DEBUG>1) printf("Active token = %d\n",active_token);  
 
-  if(active_token != new_token) {printf("IOC %s CAMCOM is otherwise in use\n",IOC_NAME); return;}
+  if(active_token != new_token) {printf("IOC %s CAMCOM is otherwise in use\n",IOC_NAME); goto free_status;}
 
   /* Enter the reservation note */
 
@@ -515,7 +518,7 @@ void ca_activity()
   ca_search_and_connect(pv_name, &id[ID_INL], NULL, NULL); ca_pend_io(1.0);
   in_len=out_buffer_len*2;
   ca_put(DBR_SHORT, id[ID_INL], &in_len); ca_pend_io(1.0);
-  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
+  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); goto free_status;}
 
   /* Write the buffer out */
 
@@ -526,7 +529,7 @@ void ca_activity()
   in_len=BUFLEN;
   */
   ca_array_put(DBR_CHAR, in_len, id[ID_INB], &camblk_tok_p->control_block.key); ca_pend_io(1.0);
-  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
+  if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); goto free_status;}
 
   /* Set the status such that the IOC wakes up to do its work */
 
@@ -561,7 +564,13 @@ void ca_activity()
   if(state==cs_never_conn) {printf("PV name <%s> not found\n",pv_name); return;}
  
   process_returned_data();
-
+  return;
+/*
+** Error exit. Set status to free.
+*/
+free_status:
+  status = CAMCOM_FREE;
+  ca_put(DBR_SHORT, id[ID_ST], &status); ca_pend_io(1.0);
   return;
 }
 
