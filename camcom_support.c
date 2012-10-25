@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cadef.h>
 
 #include "camcom_text.h"
 
@@ -388,7 +389,6 @@ void setup_whole_packet()
 
 void ca_activity()
 {
-#include <cadef.h>
   chid id[10];
   int state=0;
   short active_token, new_token, status, in_len;
