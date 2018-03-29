@@ -1,7 +1,7 @@
 /* CAMCOM lexical analyzer */
 %{
 #define YYSTYPE char *
-    #include "y.tab.h" 
+    #include "camcom_yacc.tab.h"
     #include <stdlib.h>
     #include <ctype.h>
     #include <string.h>
