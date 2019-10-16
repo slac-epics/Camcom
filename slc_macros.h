@@ -27,8 +27,8 @@
 
 typedef short             int2;           /* An I*2 */
 typedef unsigned short    int2u;          /* An unsigned I*2 */
-typedef long int          int4;           /* An I*4 */
-typedef unsigned long int int4u;          /* An unsigned I*4 */
+typedef int          	  int4;           /* An I*4 */
+typedef unsigned int      int4u;          /* An unsigned I*4 */
 typedef unsigned char     int1u;          /* For unsigned byte arithmetic */
 typedef unsigned char     charu;          /* For unsigned byte arithmetic */
 

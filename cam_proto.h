@@ -45,7 +45,7 @@
  /* Procedure cam_ini must be called once before any of the others     */
  /* (except camac_build_ctlw and decode_control_word) can be called.        */
  
- vmsstat_t camadd(const unsigned long *cctlw_p, const void *stad_p, 
+ vmsstat_t camadd(const unsigned int *cctlw_p, const void *stad_p, 
                   const unsigned short *bcnt_p, const unsigned short *emask_p,
                   campkgp_t *camblk_pp);
  
@@ -61,31 +61,31 @@
  
  vmsstat_t camgo(const campkgp_t *camblk_pp);
  
- vmsstat_t camio(const unsigned long *cctlw_p, void *datau_p,
+ vmsstat_t camio(const unsigned int *cctlw_p, void *datau_p,
                  const unsigned short *bcnt_p, void *statu_p, const unsigned short *emask_p);
  
  vmsstat_t cam_ini(void*);
  
  vmsstat_t camioi(void);
  
- vmsstat_t cammod(const unsigned long *cctlw_p, const unsigned long *cctlw_mask_p,
+ vmsstat_t cammod(const unsigned int *cctlw_p, const unsigned int *cctlw_mask_p,
                   const campkgp_t *camblk_pp);
  
  vmsstat_t camgo_start_pscd(const campkgp_t *camblk_pp, int wait);
 
- unsigned long camac_build_ctlw(
-             const unsigned long *crate_p,       /* ptr to CAMAC crate address  */
-             const unsigned long *slot_p,        /* ptr to CAMAC slot number    */
-             const unsigned long *function_p,    /* ptr to CAMAC function code  */
-             const unsigned long *subaddress_p,  /* ptr to CAMAC module subaddr */
-             const unsigned long *mode_p);       /* ptr to CAMAC driver mode    */
+ unsigned int camac_build_ctlw(
+             const unsigned int *crate_p,       /* ptr to CAMAC crate address  */
+             const unsigned int *slot_p,        /* ptr to CAMAC slot number    */
+             const unsigned int *function_p,    /* ptr to CAMAC function code  */
+             const unsigned int *subaddress_p,  /* ptr to CAMAC module subaddr */
+             const unsigned int *mode_p);       /* ptr to CAMAC driver mode    */
  
  vmsstat_t decode_control_word(
-             const unsigned long *cctlw_p,       /* ptr to CAMAC control word   */
-             unsigned long       *crate_p,       /* ptr to CAMAC crate address  */
-             unsigned long       *slot_p,        /* ptr to CAMAC slot number    */
-             unsigned long       *function_p,    /* ptr to CAMAC function code  */
-             unsigned long       *subaddress_p); /* ptr to CAMAC subaddress     */
+             const unsigned int *cctlw_p,       /* ptr to CAMAC control word   */
+             unsigned int       *crate_p,       /* ptr to CAMAC crate address  */
+             unsigned int       *slot_p,        /* ptr to CAMAC slot number    */
+             unsigned int       *function_p,    /* ptr to CAMAC function code  */
+             unsigned int       *subaddress_p); /* ptr to CAMAC subaddress     */
  
 #define CAM_PROTO_HM
 #endif

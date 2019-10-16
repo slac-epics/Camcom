@@ -20,9 +20,9 @@ short params_noval[N_noval_index];
 
 short params_valued[N_val_index];
 
-long params_numeric[N_val_index];
+int params_numeric[N_val_index];
 
-long data_array[67];
+int data_array[67];
 
 char* params_values[N_val_index];
 
@@ -38,11 +38,11 @@ char main_verb[6];
 
 int calling_level=0;
 
-long control_word_getter()
+int control_word_getter()
 {
-  long value=0;
+  int value=0;
   /*
-  long next_value;
+  int next_value;
   */
   if(params_values[branch_index]==0) return value;
   value|=((params_numeric[module_index]<<(-CTLW_MODULE_SHIFT)) & (CTLW_MODULE_MASK));
@@ -90,7 +90,7 @@ void issue_prompt(int which)
     }
 }
 
-long debug_level()
+int debug_level()
 {
   return DEBUG;
 }
@@ -110,7 +110,7 @@ void prepare_real_packet()
   int i,j;
 
   short* mptr;
-  long* lptr;
+  int* lptr;
 
   short bcnt,wcnt;
 
@@ -166,16 +166,16 @@ void prepare_real_packet()
 
        camblk_tok_p->packet[i].statdata=out_index;      
        mptr=&camblk_tok_p->control_block.key;
-       lptr=(long *)mptr;
+       lptr=(int *)mptr;
 
-       if(DEBUG>1) printf("Block.key address (long) = 0x%lx\n",(long)lptr); 
+       if(DEBUG>1) printf("Block.key address (long) = 0x%lx\n",(int)lptr); 
        /*
-       if(DEBUG>1) printf("Block.key address (short) = %lx\n",(long)mptr); 
+       if(DEBUG>1) printf("Block.key address (short) = %lx\n",(int)mptr); 
        */
        mptr+=out_index+2;
        lptr+=out_index/2;
        *lptr=0xbadbad12;
-       if(DEBUG>1) printf("Status set to 0xbadbad12 for packet %d at address 0x%lx\n",i,(long)lptr);
+       if(DEBUG>1) printf("Status set to 0xbadbad12 for packet %d at address 0x%lx\n",i,(int)lptr);
        lptr++;
 
        if(packet_write[i]!=0)
@@ -187,8 +187,8 @@ void prepare_real_packet()
               if(DEBUG>1) 
 		{
                   if(packet_32bitdata[i]==2) 
-                     printf("Data copy (packet, index, addr, dec, hex) -- %d %d 0x%lx %ld 0x%lx\n",i,j,(long)lptr,*lptr,*lptr);
-                  else printf("Data copy (packet, index, addr, dec, hex) -- %d %d 0x%lx %d 0x%x\n",i,j,(long)mptr,*mptr,*mptr);
+                     printf("Data copy (packet, index, addr, dec, hex) -- %d %d 0x%lx %ld 0x%lx\n",i,j,(int)lptr,*lptr,*lptr);
+                  else printf("Data copy (packet, index, addr, dec, hex) -- %d %d 0x%lx %d 0x%x\n",i,j,(int)mptr,*mptr,*mptr);
 		}
               mptr++; lptr++;
 	    }
@@ -224,7 +224,7 @@ void dump_packet()
   char* key;
   int ctl_buffer_len;
   short* mptr_s;
-  long* mptr_l;
+  int* mptr_l;
   char* mptr_c;
   key=strdup((char*)&camblk_tok_p->control_block.key);
   key[2]='\0';
@@ -251,8 +251,8 @@ void dump_packet()
 	}
       printf("\n");
 
-      mptr_l=(long *)&camblk_tok_p->control_block.key;
-      printf("Buffer Dump (longs), length = %d long words\n",ctl_buffer_len/2);
+      mptr_l=(int *)&camblk_tok_p->control_block.key;
+      printf("Buffer Dump (ints), length = %d int words\n",ctl_buffer_len/2);
       for(i=0;i<ctl_buffer_len/2;i++)
 	{
 	   if(i%5==0) printf("%3d:",i);
@@ -268,7 +268,7 @@ void dump_packet()
          camblk_tok_p->control_block.tbytes,
          camblk_tok_p->control_block.bit_summary);
          mptr_s=&camblk_tok_p->control_block.key;
-         printf(" Camac buffer base addr = 0x%lx\n",(long)mptr_s);
+         printf(" Camac buffer base addr = 0x%lx\n",(int)mptr_s);
 
   for(i=0;i<current_packet+1;i++)
     {
@@ -280,24 +280,24 @@ void dump_packet()
 
       if(camblk_tok_p->packet[i].wc_max>0)
 	{
-         mptr_l=(long *)&camblk_tok_p->control_block.key;
+         mptr_l=(int *)&camblk_tok_p->control_block.key;
          mptr_s=&camblk_tok_p->control_block.key;
          mptr_s+=camblk_tok_p->packet[i].statdata;
-         printf(" Data buffer base addr = 0x%8.8lx\n",(long)mptr_s);
+         printf(" Data buffer base addr = 0x%8.8lx\n",(int)mptr_s);
          printf(" Data Buffer: \n");
          mptr_s+=2;
          mptr_l+=camblk_tok_p->packet[i].statdata/2+1;
          if(packet_32bitdata[i]==1)
           for(j=0;j<camblk_tok_p->packet[i].wc_max;j++)
             {
-              if(j%10==0) printf("shortwords (@ 0x%8.8lx) %3d:",(long)mptr_s,j);
+              if(j%10==0) printf("shortwords (@ 0x%8.8lx) %3d:",(int)mptr_s,j);
               printf("  0x%x",*mptr_s++);
               if(j%10==9) printf("\n");
 	    }
          if(packet_32bitdata[i]==2)
           for(j=0;j<camblk_tok_p->packet[i].wc_max/2;j++)
             {
-              if(j%5==0) printf("longwords (@ 0x%8.8lx) %3d:",(long)mptr_l,j);
+              if(j%5==0) printf("intwords (@ 0x%8.8lx) %3d:",(int)mptr_l,j);
               printf("  0x%lx",*mptr_l++);
               if(j%5==4) printf("\n");
 	    } 
@@ -319,7 +319,7 @@ void store_index(int index_value)
   return;
 }
 
-long show_reset_dump(const char* token_p)
+int show_reset_dump(const char* token_p)
 {
 if(DEBUG>1)printf("Simple verb %s found\n",token_p);
  if(strncmp(token_p,"SHOW",4)==0) print_token_table();
@@ -578,8 +578,8 @@ void process_returned_data()
 {
   short i,j;
   short* mptr_s;
-  long* mptr_l;
-  long stat_long;
+  int* mptr_l;
+  int stat_long;
   float* mptr_f;
   short x_bit,q_bit;
 
@@ -591,11 +591,11 @@ void process_returned_data()
          camblk_tok_p->control_block.tbytes,
          camblk_tok_p->control_block.bit_summary);
          mptr_s=&camblk_tok_p->control_block.key;
-         printf(" Camac buffer base addr = 0x%lx\n",(long)mptr_s);
+         printf(" Camac buffer base addr = 0x%lx\n",(int)mptr_s);
     }
   for(i=0;i<current_packet+1;i++)
     {
-      mptr_l=(long *)&camblk_tok_p->control_block.key;
+      mptr_l=(int *)&camblk_tok_p->control_block.key;
       mptr_l+=camblk_tok_p->packet[i].statdata/2;
       x_bit=(*mptr_l&STAT_X)>0;
       q_bit=(*mptr_l&STAT_Q)>0;
@@ -616,7 +616,7 @@ void process_returned_data()
          if(packet_32bitdata[i]==1)
           for(j=0;j<camblk_tok_p->packet[i].wc_max;j++)
             {
-              if(DEBUG>1 && j%10==0) printf("shortwords (@ 0x%lx) %3d:",(long)mptr_s,j);
+              if(DEBUG>1 && j%10==0) printf("shortwords (@ 0x%lx) %3d:",(int)mptr_s,j);
               if(DEBUG>1) printf("  0x%x",*mptr_s++);
               if(!params_valued[output_index]&&packet_read[i])
                 printf(" %i\t%d\t%4x\n",j+1,*mptr_s,*mptr_s);
@@ -631,7 +631,7 @@ void process_returned_data()
          if(packet_32bitdata[i]==2)
           for(j=0;j<camblk_tok_p->packet[i].wc_max/2;j++)
             {
-              if(DEBUG>1 && j%5==0) printf("longwords (@ 0x%lx) %3d:",(long)mptr_l,j);
+              if(DEBUG>1 && j%5==0) printf("longwords (@ 0x%lx) %3d:",(int)mptr_l,j);
               if (DEBUG>1) printf("  0x%lx",*mptr_l);
               mptr_l++;
               mptr_f=(float *)mptr_l;
@@ -937,7 +937,7 @@ void unpack_data (const char *ptr)
   int local_dec;
   int param_number;
   char param_char;
-  long piop_checksum=0;
+  int piop_checksum=0;
   int i;
 
 /*--------------------------------------------------------------------------*/

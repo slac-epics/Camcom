@@ -10,7 +10,7 @@ Auth: 26-Jan-2010  R. Chestnut
 
 #ifndef camcom_proto_h
 
-long debug_level();
+int debug_level();
 
 void token_with_number(const char *token_p, const char *number_p);
 
@@ -42,17 +42,17 @@ void ca_activity();
 
 void check_for_action();
 
-long show_reset_dump(const char *token_p);
+int show_reset_dump(const char *token_p);
 
-long control_word_getter();
+int control_word_getter();
 
-long verb_help (const char *topic_p);
+int verb_help (const char *topic_p);
 
 void help_type_param (const char *topic_p);
 
-long verb_other(const char *token_p);
+int verb_other(const char *token_p);
 
-long modifier_forever();
+int modifier_forever();
 
 void setup_whole_packet();
 
@@ -62,7 +62,7 @@ void camcom_packet_clean_all();
 
 void camcom_packet_clean_sticky();
 
-long camcom_process();
+int camcom_process();
 
 void set_calling_level(const int);
 

@@ -85,7 +85,7 @@ typedef struct
  */
 typedef struct
 {
-    unsigned long  stat; 
+    unsigned int  stat; 
     unsigned short  data[40];
 } camac_statdata_ts;
 
@@ -97,8 +97,8 @@ typedef struct
  
 typedef struct
 {
-    unsigned long  stat;
-    unsigned long  data;
+    unsigned int  stat;
+    unsigned int  data;
 } camac_longdata_ts;
 
 
@@ -111,13 +111,13 @@ typedef struct
 /* MBCD_LEN is 6 shorts */
 typedef struct
 {
-    unsigned long              ctlw;
+  unsigned int                ctlw;
   /*
     camac_statdata_ts *statdata;
   */
-  long                        statdata;
-    unsigned short              wc_max;    /* max number of words in this pkt */
-    unsigned short              cic;       /* completion interrupt code, must be 0 */
+  int                         statdata;
+  unsigned short              wc_max;    /* max number of words in this pkt */
+  unsigned short              cic;       /* completion interrupt code, must be 0 */
 } camac_pkt_ts;
 
 /*
@@ -133,7 +133,7 @@ typedef struct
 {
     camac_ctlb_ts  control_block;
     camac_pkt_ts   packet[2];
-    unsigned long emask;
+    unsigned int emask;
 } camac_pkg_ts;
 
 #define CAMBLK_P ((camac_pkg_ts *) *camblk_tok_p)
@@ -146,7 +146,7 @@ typedef struct
 
 short out_buffer_len;
 
-long packet_data[NOPS][128];
+int packet_data[NOPS][128];
 
 short packet_wcmax[NOPS];
 
@@ -160,7 +160,7 @@ short packet_32bitdata[NOPS];
 
 short packet_bcnt[NOPS];
 
-typedef union {__attribute__((packed)) long l; short w[2];} ctlw_t;
+typedef union {__attribute__((packed)) int l; short w[2];} ctlw_t;
 
 ctlw_t packet_ctlw[NOPS];
 
