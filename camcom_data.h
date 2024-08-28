@@ -10,7 +10,7 @@ Auth: 26-Jan-2010  R. Chestnut
 
 #ifndef camcom_data_h
 
-short current_packet;
+extern short current_packet;
 
 
 #define CTLW_F16      0x00100000
@@ -144,33 +144,41 @@ typedef struct
 
 #define STAT_DATA_LENGTH 128
 
-short out_buffer_len;
+#ifdef CAMCOM_DATA_DEFS
+#define CAMCOM_EXTERN
+#else
+#define CAMCOM_EXTERN extern
+#endif
 
-int packet_data[NOPS][128];
+CAMCOM_EXTERN short out_buffer_len;
 
-short packet_wcmax[NOPS];
+CAMCOM_EXTERN int packet_data[NOPS][128];
 
-short packet_read[NOPS];
+CAMCOM_EXTERN short packet_wcmax[NOPS];
 
-short packet_write[NOPS];
+CAMCOM_EXTERN short packet_read[NOPS];
 
-short packet_pack8[NOPS];
+CAMCOM_EXTERN short packet_write[NOPS];
 
-short packet_32bitdata[NOPS];
+CAMCOM_EXTERN short packet_pack8[NOPS];
 
-short packet_bcnt[NOPS];
+CAMCOM_EXTERN short packet_32bitdata[NOPS];
+
+CAMCOM_EXTERN short packet_bcnt[NOPS];
 
 typedef union {__attribute__((packed)) int l; short w[2];} ctlw_t;
 
-ctlw_t packet_ctlw[NOPS];
+CAMCOM_EXTERN ctlw_t packet_ctlw[NOPS];
 
-camac_pkg_ts *camblk_tok_p;
+CAMCOM_EXTERN camac_pkg_ts *camblk_tok_p;
 
-camac_statdata_ts *camac_statdata_p;
+CAMCOM_EXTERN camac_statdata_ts *camac_statdata_p;
 
-int calling_param_values[39];
+CAMCOM_EXTERN int calling_param_values[39];
 
-char* calling_param_string[39];
+CAMCOM_EXTERN char* calling_param_string[39];
+
+#undef CAMCOM_EXTERN
 
 #define camcom_data_h
 #endif
