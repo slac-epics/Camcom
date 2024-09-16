@@ -1,4 +1,5 @@
 /* CAMCOM support routines */
+#define CAMCOM_DATA_DEFS /* Define camcom_data.h globals in this translation unit */
 #include "cctlwmasks.h"
 #include "camcom_data.h"
 #include "camcom_proto.h"
