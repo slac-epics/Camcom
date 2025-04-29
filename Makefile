@@ -13,6 +13,8 @@ caCamcom_SRCS += camcom_lex.c
 caCamcom_SRCS  += camcom_support.c
 caCamcom_LIBS	+= $(EPICS_BASE_HOST_LIBS)
 
+BIN_INSTALLS += $(TOP)/camcom.1
+BIN_INSTALLS += $(TOP)/camcom.help
 
 include $(TOP)/configure/RULES
 include $(TOP)/configure/RULES_TOP

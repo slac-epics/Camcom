@@ -726,7 +726,7 @@ void help_type_param(const char* token_p)
          printf("Executing man camcom.1\n");
          execlp("man","man","$EPICS_EXTENSIONS/src/Camcom/camcom.1",0);
 	 */
-         system("man $EPICS_EXTENSIONS/src/Camcom/camcom.1");
+         system("man $EPICS_EXTENSIONS/bin/$EPICS_HOST_ARCH/camcom.1");
        }
      return; 
      }
