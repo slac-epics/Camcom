@@ -353,10 +353,10 @@ void camcom_packet_clean_all()
 	 memset(&packet_bcnt,0,2*NOPS);
          memset(&packet_ctlw,0,4*NOPS);
     }
-  /*
+  /* lorelli: This was commented out in favor of the memset on L359. I'm not sure why, since the revision history here
+   * is rather limited. The memset on L359 unsurprisingly causes a heap buffer overflow. */
   memset(camblk_tok_p,0,camblk_bc);
-  */
-  memset(camblk_tok_p,0,8192);
+  /*memset(camblk_tok_p,0,8192);*/
   memcpy(&camblk_tok_p->control_block.key,"FR",2);
   camblk_tok_p->control_block.nops=NOPS;
   return;
