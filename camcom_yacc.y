@@ -4,6 +4,7 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
+  #include <unistd.h>
   #include "camcom_proto.h"
   #include "camcom_data.h"
   int yylex(void);
