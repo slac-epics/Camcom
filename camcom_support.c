@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cadef.h>
+#include <stdint.h>
 
 #include "camcom_text.h"
 
@@ -110,7 +111,7 @@ void prepare_real_packet()
 {
   int i,j;
 
-  short* mptr;
+  unsigned short* mptr;
   int* lptr;
 
   short bcnt,wcnt;
@@ -129,7 +130,7 @@ void prepare_real_packet()
   if(params_noval[p32_index]||params_noval[p24_index]||params_noval[longword_index])  packet_32bitdata[current_packet]=2;
   else packet_32bitdata[current_packet]=1;
 
-  if (DEBUG>0) printf("Ctlw 0x%lx, Func code %ld for packet %d, read: %d, write: %d\n",
+  if (DEBUG>0) printf("Ctlw 0x%x, Func code %d for packet %d, read: %d, write: %d\n",
     packet_ctlw[current_packet].l,params_numeric[fn_index],
     current_packet,packet_read[current_packet],packet_write[current_packet]);
 
@@ -145,7 +146,7 @@ void prepare_real_packet()
 
   for(i=0;i<current_packet+1;i++)
     {
-  if (DEBUG>0) printf("Control word: 0x%lx, wcmax: %d,32bit mult: %d, read: %d,write: %d\n",packet_ctlw[i].l,
+  if (DEBUG>0) printf("Control word: 0x%x, wcmax: %d,32bit mult: %d, read: %d,write: %d\n",packet_ctlw[i].l,
       packet_wcmax[i],packet_32bitdata[i],packet_read[i],packet_write[i]);
 
       camblk_tok_p->packet[i].ctlw=packet_ctlw[i].l;
@@ -169,14 +170,14 @@ void prepare_real_packet()
        mptr=&camblk_tok_p->control_block.key;
        lptr=(int *)mptr;
 
-       if(DEBUG>1) printf("Block.key address (long) = 0x%lx\n",(int)lptr); 
+       if(DEBUG>1) printf("Block.key address (long) = %p\n",lptr); 
        /*
        if(DEBUG>1) printf("Block.key address (short) = %lx\n",(int)mptr); 
        */
        mptr+=out_index+2;
        lptr+=out_index/2;
        *lptr=0xbadbad12;
-       if(DEBUG>1) printf("Status set to 0xbadbad12 for packet %d at address 0x%lx\n",i,(int)lptr);
+       if(DEBUG>1) printf("Status set to 0xbadbad12 for packet %d at address %p\n",i,lptr);
        lptr++;
 
        if(packet_write[i]!=0)
@@ -188,8 +189,8 @@ void prepare_real_packet()
               if(DEBUG>1) 
 		{
                   if(packet_32bitdata[i]==2) 
-                     printf("Data copy (packet, index, addr, dec, hex) -- %d %d 0x%lx %ld 0x%lx\n",i,j,(int)lptr,*lptr,*lptr);
-                  else printf("Data copy (packet, index, addr, dec, hex) -- %d %d 0x%lx %d 0x%x\n",i,j,(int)mptr,*mptr,*mptr);
+                     printf("Data copy (packet, index, addr, dec, hex) -- %d %d %p %d 0x%x\n",i,j,lptr,*lptr,*lptr);
+                  else printf("Data copy (packet, index, addr, dec, hex) -- %d %d %p %d 0x%x\n",i,j,mptr,*mptr,*mptr);
 		}
               mptr++; lptr++;
 	    }
@@ -208,13 +209,13 @@ void print_token_table()
   for (i=0;i<N_noval_index;i++) { printf(" %s:%d ",noval_names[i],params_noval[i]); if (i%6==5) printf("\n   ");}
   printf("\n\nParameters with Data:\nIndex\tName\t\tNumber\tString \n");
   for(i=0;i<N_val_index;i++)
-    printf("%d\t%s\t\t%ld\t%s\n",i,val_names[i],params_numeric[i],params_values[i]);
-  printf("Func code %ld, read: %d, write: %d\n",params_numeric[fn_index],read_fn,write_fn);
+    printf("%d\t%s\t\t%d\t%s\n",i,val_names[i],params_numeric[i],params_values[i]);
+  printf("Func code %d, read: %d, write: %d\n",params_numeric[fn_index],read_fn,write_fn);
   if (params_numeric[data_index]>0)  
    for(i=0;i<params_numeric[data_index];i++)
      {
-	if(params_noval[hex_index]==0) printf("Decimal data element %d = %ld\n",i,data_array[i]);
-	else                           printf("Hex data element %d = 0x%lx\n",i,data_array[i]);
+	if(params_noval[hex_index]==0) printf("Decimal data element %d = %d\n",i,data_array[i]);
+	else                           printf("Hex data element %d = 0x%x\n",i,data_array[i]);
      }
   return;
 }
@@ -224,7 +225,7 @@ void dump_packet()
   int i,j;
   char* key;
   int ctl_buffer_len;
-  short* mptr_s;
+  unsigned short* mptr_s;
   int* mptr_l;
   char* mptr_c;
   key=strdup((char*)&camblk_tok_p->control_block.key);
@@ -257,7 +258,7 @@ void dump_packet()
       for(i=0;i<ctl_buffer_len/2;i++)
 	{
 	   if(i%5==0) printf("%3d:",i);
-	   printf("  0x%8lx",*mptr_l++);
+	   printf("  0x%8x",*mptr_l++);
            if(i%5==4) printf("\n");
 	}
       printf("\n");
@@ -269,11 +270,11 @@ void dump_packet()
          camblk_tok_p->control_block.tbytes,
          camblk_tok_p->control_block.bit_summary);
          mptr_s=&camblk_tok_p->control_block.key;
-         printf(" Camac buffer base addr = 0x%lx\n",(int)mptr_s);
+         printf(" Camac buffer base addr = %p\n",mptr_s);
 
   for(i=0;i<current_packet+1;i++)
     {
-      printf("CAMAC Block %d:\n ctlw: 0x%lx\n data offset: 0x%lx words\n wc_max: %d\n WC Mult: %d\n",i,
+      printf("CAMAC Block %d:\n ctlw: 0x%x\n data offset: 0x%x words\n wc_max: %d\n WC Mult: %d\n",i,
 	     camblk_tok_p->packet[i].ctlw,
              camblk_tok_p->packet[i].statdata,
 	     camblk_tok_p->packet[i].wc_max,
@@ -284,22 +285,22 @@ void dump_packet()
          mptr_l=(int *)&camblk_tok_p->control_block.key;
          mptr_s=&camblk_tok_p->control_block.key;
          mptr_s+=camblk_tok_p->packet[i].statdata;
-         printf(" Data buffer base addr = 0x%8.8lx\n",(int)mptr_s);
+         printf(" Data buffer base addr = 0x%8.8lx\n",(uintptr_t)mptr_s);
          printf(" Data Buffer: \n");
          mptr_s+=2;
          mptr_l+=camblk_tok_p->packet[i].statdata/2+1;
          if(packet_32bitdata[i]==1)
           for(j=0;j<camblk_tok_p->packet[i].wc_max;j++)
             {
-              if(j%10==0) printf("shortwords (@ 0x%8.8lx) %3d:",(int)mptr_s,j);
+              if(j%10==0) printf("shortwords (@ 0x%8.8lx) %3d:",(uintptr_t)mptr_s,j);
               printf("  0x%x",*mptr_s++);
               if(j%10==9) printf("\n");
 	    }
          if(packet_32bitdata[i]==2)
           for(j=0;j<camblk_tok_p->packet[i].wc_max/2;j++)
             {
-              if(j%5==0) printf("intwords (@ 0x%8.8lx) %3d:",(int)mptr_l,j);
-              printf("  0x%lx",*mptr_l++);
+              if(j%5==0) printf("intwords (@ 0x%8.8lx) %3d:",(uintptr_t)mptr_l,j);
+              printf("  0x%x",*mptr_l++);
               if(j%5==4) printf("\n");
 	    } 
 	}
@@ -578,7 +579,7 @@ free_status:
 void process_returned_data()
 {
   short i,j;
-  short* mptr_s;
+  unsigned short* mptr_s;
   int* mptr_l;
   int stat_long;
   float* mptr_f;
@@ -592,7 +593,7 @@ void process_returned_data()
          camblk_tok_p->control_block.tbytes,
          camblk_tok_p->control_block.bit_summary);
          mptr_s=&camblk_tok_p->control_block.key;
-         printf(" Camac buffer base addr = 0x%lx\n",(int)mptr_s);
+         printf(" Camac buffer base addr = %p\n",mptr_s);
     }
   for(i=0;i<current_packet+1;i++)
     {
@@ -603,7 +604,7 @@ void process_returned_data()
       stat_long=*mptr_l;
       if(DEBUG>1)
 	{  
-      printf("CAMAC Block %d:\n ctlw: 0x%lx\n data offset: 0x%lx words\n wc_max: %d\n Status: 0x%lx\n Data buffer:\n",i,
+      printf("CAMAC Block %d:\n ctlw: 0x%x\n data offset: 0x%x words\n wc_max: %d\n Status: 0x%x\n Data buffer:\n",i,
 	     camblk_tok_p->packet[i].ctlw,
              camblk_tok_p->packet[i].statdata,
 	     camblk_tok_p->packet[i].wc_max,
@@ -617,7 +618,7 @@ void process_returned_data()
          if(packet_32bitdata[i]==1)
           for(j=0;j<camblk_tok_p->packet[i].wc_max;j++)
             {
-              if(DEBUG>1 && j%10==0) printf("shortwords (@ 0x%lx) %3d:",(int)mptr_s,j);
+              if(DEBUG>1 && j%10==0) printf("shortwords (@ %p) %3d:",mptr_s,j);
               if(DEBUG>1) printf("  0x%x",*mptr_s++);
               if(!params_valued[output_index]&&packet_read[i])
                 printf(" %i\t%d\t%4x\n",j+1,*mptr_s,*mptr_s);
@@ -632,14 +633,14 @@ void process_returned_data()
          if(packet_32bitdata[i]==2)
           for(j=0;j<camblk_tok_p->packet[i].wc_max/2;j++)
             {
-              if(DEBUG>1 && j%5==0) printf("longwords (@ 0x%lx) %3d:",(int)mptr_l,j);
-              if (DEBUG>1) printf("  0x%lx",*mptr_l);
+              if(DEBUG>1 && j%5==0) printf("longwords (@ %p) %3d:",mptr_l,j);
+              if (DEBUG>1) printf("  0x%x",*mptr_l);
               mptr_l++;
               mptr_f=(float *)mptr_l;
               if(!params_valued[output_index]&&packet_read[i])
-                printf(" %2.2i\t%ld\t%8lx\t%#10.4g\n",j,*mptr_l,*mptr_l,*mptr_f);
+                printf(" %2.2i\t%d\t%8x\t%#10.4g\n",j,*mptr_l,*mptr_l,*mptr_f);
               else if(packet_read[j])
-                fprintf(output_file," %2.2i\t%ld\t%8lx\t%#10.4g\n",j,*mptr_l,*mptr_l,*mptr_f);
+                fprintf(output_file," %2.2i\t%d\t%8x\t%#10.4g\n",j,*mptr_l,*mptr_l,*mptr_f);
               if(j%5==4) 
 		{
 		  if(DEBUG>1) printf("\n");
@@ -649,9 +650,9 @@ void process_returned_data()
        	if(DEBUG>1) printf("\n"); 
         if(!params_valued[quiet_index])
 	    {
-	      printf(" %2i: Q=%1i  X=%1i  BCNT= %i  STAT=0x%8.8lx\n",i+1,q_bit,x_bit, camblk_tok_p->packet[i].wc_max*2,stat_long);
+	      printf(" %2i: Q=%1i  X=%1i  BCNT= %i  STAT=0x%8.8x\n",i+1,q_bit,x_bit, camblk_tok_p->packet[i].wc_max*2,stat_long);
               if(params_valued[output_index])
-		    fprintf(output_file," %2.2i: Q=%i  X=%i  BCNT= %i  STAT=0x%8.8lx\n",i+1,q_bit,x_bit, 
+		    fprintf(output_file," %2.2i: Q=%i  X=%i  BCNT= %i  STAT=0x%8.8x\n",i+1,q_bit,x_bit, 
                            camblk_tok_p->packet[i].wc_max*2,stat_long);
 	    }
     }
@@ -774,7 +775,7 @@ void token_with_parameter(const char* token_p, const char *param_p)
       else
         {
           params_numeric[current_index]=calling_param_values[param_number];
-          if(DEBUG>1) printf("Value %ld found for index %d, modifier %s \n",
+          if(DEBUG>1) printf("Value %d found for index %d, modifier %s \n",
 	     params_numeric[current_index],current_index, token_p);
         }
 
@@ -784,12 +785,12 @@ void token_with_parameter(const char* token_p, const char *param_p)
           if(params_numeric[crate_index]<MIN_CRATE_ADR) 
              {
                params_numeric[crate_index]=MIN_CRATE_ADR;
-               printf("Changing crate to MINIMUM value of %ld\n",params_numeric[crate_index]);
+               printf("Changing crate to MINIMUM value of %d\n",params_numeric[crate_index]);
 	     }
           if(params_numeric[crate_index]>MAX_CRATE_ADR) 
              {
                params_numeric[crate_index]=MAX_CRATE_ADR;
-               printf("Changing crate to MAXIMUM value of %ld\n",params_numeric[crate_index]);
+               printf("Changing crate to MAXIMUM value of %d\n",params_numeric[crate_index]);
 	     }
 	}
       if(current_index==module_index)
@@ -797,12 +798,12 @@ void token_with_parameter(const char* token_p, const char *param_p)
           if(params_numeric[module_index]<MIN_CRATE_SLOT) 
              {
                params_numeric[module_index]=MIN_CRATE_SLOT;
-               printf("Changing module to MINIMUM value of %ld\n",params_numeric[module_index]);
+               printf("Changing module to MINIMUM value of %d\n",params_numeric[module_index]);
 	     }
           if(params_numeric[module_index]>MAX_CRATE_SLOT) 
              {
                params_numeric[module_index]=MAX_CRATE_SLOT;
-               printf("Changing module to MAXIMUM value of %ld\n",params_numeric[module_index]);
+               printf("Changing module to MAXIMUM value of %d\n",params_numeric[module_index]);
 	     }
 	}
     }
@@ -877,7 +878,7 @@ void token_with_number(const char* token_p, const char *param_p)
 {
   char* end;
   int use_hex;
-  char* local_p;
+  const char* local_p;
   local_p=param_p;
   if (current_index <= N_val_index)
     {
@@ -894,7 +895,7 @@ void token_with_number(const char* token_p, const char *param_p)
       if(use_hex) params_numeric[current_index]=strtol(local_p,&end,16);
       else        params_numeric[current_index]=strtol(local_p,&end,10);
 
-      if(DEBUG>1) printf("Value %ld found for index %d, modifier %s \n",
+      if(DEBUG>1) printf("Value %d found for index %d, modifier %s \n",
 	 params_numeric[current_index],current_index, token_p);
       if(current_index==bcnt_index) packet_wcmax[current_packet]=params_numeric[bcnt_index]/2;
       if(current_index==crate_index)
@@ -902,12 +903,12 @@ void token_with_number(const char* token_p, const char *param_p)
           if(params_numeric[crate_index]<MIN_CRATE_ADR) 
              {
                params_numeric[crate_index]=MIN_CRATE_ADR;
-               printf("Changing crate to MINIMUM value of %ld\n",params_numeric[crate_index]);
+               printf("Changing crate to MINIMUM value of %d\n",params_numeric[crate_index]);
 	     }
           if(params_numeric[crate_index]>MAX_CRATE_ADR) 
              {
                params_numeric[crate_index]=MAX_CRATE_ADR;
-               printf("Changing crate to MAXIMUM value of %ld\n",params_numeric[crate_index]);
+               printf("Changing crate to MAXIMUM value of %d\n",params_numeric[crate_index]);
 	     }
 	}
       if(current_index==module_index)
@@ -915,12 +916,12 @@ void token_with_number(const char* token_p, const char *param_p)
           if(params_numeric[module_index]<MIN_CRATE_SLOT) 
              {
                params_numeric[module_index]=MIN_CRATE_SLOT;
-               printf("Changing module to MINIMUM value of %ld\n",params_numeric[module_index]);
+               printf("Changing module to MINIMUM value of %d\n",params_numeric[module_index]);
 	     }
           if(params_numeric[module_index]>MAX_CRATE_SLOT) 
              {
                params_numeric[module_index]=MAX_CRATE_SLOT;
-               printf("Changing module to MAXIMUM value of %ld\n",params_numeric[module_index]);
+               printf("Changing module to MAXIMUM value of %d\n",params_numeric[module_index]);
 	     }
 	}
     }
@@ -1004,7 +1005,7 @@ void unpack_data (const char *ptr)
 	  cho=local_copy+1;
 
        if(DEBUG>1) 
-         printf("Data value %d = %ld, or 0x%lx\n",array_index,data_array[array_index-1],data_array[array_index-1]); 
+         printf("Data value %d = %d, or 0x%x\n",array_index,data_array[array_index-1],data_array[array_index-1]); 
 
     /* Check for 0x preceeding number */
 
@@ -1053,10 +1054,10 @@ void unpack_data (const char *ptr)
 	  {
             piop_checksum+=data_array[i]&0xffff;
 	    piop_checksum+=(data_array[i]>>16)&0xffff;
-            if(DEBUG>1) printf("Checksum at item %d = Dec: %ld, Hex: %lx\n",i,piop_checksum,piop_checksum);
+            if(DEBUG>1) printf("Checksum at item %d = Dec: %d, Hex: %x\n",i,piop_checksum,piop_checksum);
  	  }
         piop_checksum&=0xffff;
-        if(DEBUG>1) printf("Final checksum = Dec: %ld, Hex: %lx\n",piop_checksum,piop_checksum);
+        if(DEBUG>1) printf("Final checksum = Dec: %d, Hex: %x\n",piop_checksum,piop_checksum);
         data_array[array_index++]=piop_checksum;
         data_array[array_index]=0;
         params_numeric[data_index]++;
@@ -1067,8 +1068,8 @@ void unpack_data (const char *ptr)
             packet_data[current_packet][i+1]=data_array[i];
             if(DEBUG>1)
 	      {
-	         if(params_noval[hex_index]==0) printf("Decimal data element %d = %ld\n",i,data_array[i]);
-	         else                           printf("Hex data element %d = 0x%lx\n",i,data_array[i]);
+	         if(params_noval[hex_index]==0) printf("Decimal data element %d = %d\n",i,data_array[i]);
+	         else                           printf("Hex data element %d = 0x%x\n",i,data_array[i]);
 	      }
 	  }
 
@@ -1077,7 +1078,7 @@ void unpack_data (const char *ptr)
     if(params_numeric[bcnt_index]==0)
       {
       packet_wcmax[current_packet]=params_numeric[data_index];
-      if(DEBUG>1) printf("WCMAX for packet %d set to %ld in UNPACK\n",current_packet,params_numeric[data_index]);
+      if(DEBUG>1) printf("WCMAX for packet %d set to %d in UNPACK\n",current_packet,params_numeric[data_index]);
       }
     return;
 }
